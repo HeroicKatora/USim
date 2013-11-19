@@ -1,11 +1,11 @@
 CC     = gcc
 CFLAGS = -Wall -Wextra -g 
 
-OBJECTS = main.o particle.o vector.o
+OBJECTS = main.o particle.o vector.o vector_math.o
 
 all: CFLAGS += -D__DEBUG__
 all: $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o usim.bin
+	$(CC) $(CFLAGS) $(OBJECTS) -o usim.bin -lm
 
 release: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o usim.bin
