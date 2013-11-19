@@ -9,7 +9,7 @@ typedef struct {
     Vector *speed;
 } Particle;
 
-Particle *particle_create(double x, double y, double mass);
+Particle *particle_create(double x, double y, double z, double mass);
 void particle_free(Particle *p);
 
 #endif

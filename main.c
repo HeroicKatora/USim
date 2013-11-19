@@ -15,9 +15,10 @@ int main(int argc, char **argv)
   int i = 0;
   Particle *vector[c];
   for(i = 0; i < c; i++){
-    vector[i] = particle_create(i, i, i*2);
+    vector[i] = particle_create(i, i, i, i*2);
   }
   
+  printf("Press any key to continue...");
   getchar();
   
   for(i = 0; i < c; i++){

@@ -2,12 +2,13 @@
 
 #include "dbg.h"
 
-Vector *vector_create(double x, double y)
+Vector *vector_create(double x, double y, double z)
 {
   Vector *v = (Vector *) malloc(sizeof(Vector));
   check_mem(v);
   v->x = x;
   v->y = y;
+  v->z = z;
   return v;
   
 error:

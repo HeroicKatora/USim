@@ -2,15 +2,15 @@
 
 #include "dbg.h"
 
-Particle *particle_create(double x, double y, double mass)
+Particle *particle_create(double x, double y, double z, double mass)
 {
   Particle *p = (Particle *) malloc(sizeof(Particle));
   check_mem(p);
   
-  p->position = vector_create(x, y);
+  p->position = vector_create(x, y, z);
   check_mem(p->position);
   
-  p->speed = vector_create(0, 0);
+  p->speed = vector_create(0, 0, 0);
   check_mem(p->speed);
   
   p->mass = mass;
