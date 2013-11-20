@@ -1,7 +1,7 @@
 CC     = gcc
 CFLAGS = -Wall -Wextra -g 
 
-OBJECTS = main.o particle.o vector.o vector_math.o
+OBJECTS = main.o particle.o vector.o vector_math.o sim_state.o
 
 all: CFLAGS += -D__DEBUG__
 all: $(OBJECTS)
