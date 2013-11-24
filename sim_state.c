@@ -10,7 +10,7 @@ Sim_state *createEmpty(int count)
 	check_mem(s);
 
 	s->particles = (Particle**)calloc(count, sizeof(Particle*));
-	check_mem(s);
+	check_mem(s->particles);
 
 	s->count = count;
 
