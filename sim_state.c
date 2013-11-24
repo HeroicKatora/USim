@@ -1,22 +1,46 @@
 #include "sim_state.h"
+#include "constants.h"
+#include <math.h>
 
 #include "dbg.h"
 
-Sim_state *createEmpty(int count){
+Sim_state *createEmpty(int count)
+{
 	Sim_state *s = (Sim_state *)malloc(sizeof(Sim_state));
+	check_mem(s);
 
 	s->particles = (Particle**)calloc(count, sizeof(Particle*));
+	check_mem(s);
 
 	s->count = count;
 
 	return s;
+error:
+	state_free(s);
+	return NULL;
 }
 
-Sim_state *getNextState(int timestep){
-  return NULL;
+Sim_state *getNextState(Sim_state *state,int timestep)
+{
+	Sim_state *newState = createEmpty(state->count);
+	//TODO Move particle
+	double grav_multiplier = GRAVITATION_CONSTANT/(state->boxSize*state->boxSize);
+	int i;
+	for(i = 0;i<state->count;i++)
+	{
+		int j;
+		for(j = i+1;j<state->count;j++)
+		{
+
+		}
+	}
+	//TODO Join near particles
+	newState->boxSize = state->boxSize*exp(HUBBLE_PER_YEAR*timestep);
+	return newState;
 }
 
-Sim_state *initRandom(Sim_state* state){
+Sim_state *initRandom(Sim_state* state)
+{
 
 	srand(time(NULL));
 	int i;
@@ -32,13 +56,31 @@ Sim_state *initRandom(Sim_state* state){
 	return state;
 }
 
-Sim_state *setParticles(Sim_state* state, Particle** particles, int count){
-	int i;
-	for(i = state->count-1;i>=0;i--){
-		particle_free(state->particles[i]);
-		free(state->particles[i]);
-	}
+Sim_state *setParticles(Sim_state* state, Particle** particles, int count)
+{
+	state_particle_free(state);
 	state->count = count;
 	state->particles = particles;
 	return state;
+}
+
+void state_free(Sim_state *sim)
+{
+	if(sim){
+		state_particle_free(sim);
+		free(sim);
+	}
+	sim = NULL;
+}
+
+void state_particles_free(Sim_state *sim)
+{
+	if(sim&&sim->particles){
+		int i;
+		for(i = sim->count-1;i>=0;i--){
+			particle_free(sim->particles[i]);
+		}
+		free(sim->particles);
+	}
+	sim->particles = NULL;
 }

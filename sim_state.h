@@ -12,9 +12,10 @@ typedef struct{
 	Particle** particles;
 } Sim_state;
 
-Sim_state *getNextState(int timestep);
+Sim_state *getNextState(Sim_state *state, int timestep);
 Sim_state *initRandom(Sim_state* state);
 Sim_state *setParticles(Sim_state* state, Particle** particles, int count);
 Sim_state *createEmpty(int count);
+void state_free(Sim_state *sim);
 
 #endif
