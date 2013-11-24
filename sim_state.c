@@ -27,14 +27,14 @@ Also treat them as if they were translated by one cube, described by the short.
 01000 turning translation on, then the 2nd and 3rd bit identify the axis. 1 means b is translated by one cube in positive direction, 0 the other way.*/
 void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation){
 	Vector *pos_dif = vector_sub(b->position,a->position);
-	if((translation&01000) == 01000){
+	if((translation&0b1000) == 0b1000){
 		int add = 1;
-		if((translation&01) == 0) add*=-1;
-		if(((translation>>1)&011) == 0){
+		if((translation&0b1) == 0) add*=-1;
+		if(((translation>>1)&0b11) == 0){
 			pos_dif->x += add;
-		}else if(((translation>>1)&011) == 1){
+		}else if(((translation>>1)&0b11) == 1){
 			pos_dif->y += add;
-		}else if(((translation>>1)&011) == 2){
+		}else if(((translation>>1)&0b11) == 2){
 			pos_dif->z += add;
 		}
 	}
