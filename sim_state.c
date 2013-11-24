@@ -24,19 +24,25 @@ error:
 
 /*Calculate the effect of the particles on each other and store the resulting speed vectors in the given location.
 Also treat them as if they were translated by one cube, described by the short.
-01000 turning translation on, then the 2nd and 3rd bit identify the axis. 1 means b is translated by one cube in positive direction, 0 the other way.*/
+Every two bit of translation refer to one axis(x are bits 3 and 4, y are 5&6,..).
+The first bit toggles translation on and off, the seconds one describes which translation is used.
+1 means b is translated by one cube in positive direction, 0 the other way.*/
 void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation){
 	Vector *pos_dif = vector_sub(b->position,a->position);
-	if((translation&0b1000) == 0b1000){
+	if((translation&0b10)==0b10){
 		int add = 1;
-		if((translation&0b1) == 0) add*=-1;
-		if(((translation>>1)&0b11) == 0){
-			pos_dif->x += add;
-		}else if(((translation>>1)&0b11) == 1){
-			pos_dif->y += add;
-		}else if(((translation>>1)&0b11) == 2){
-			pos_dif->z += add;
-		}
+		if((translation&0b1)==0)add*=-1;
+		pos_dif->z += add;
+	}
+	if((translation&0b1000)==0b1000){
+		int add = 1;
+		if((translation&0b100)==0)add*=-1;
+		pos_dif->y += add;
+	}
+	if((translation&0b100000)==0b100000){
+		int add = 1;
+		if((translation&0b10000)==0)add*=-1;
+		pos_dif->x += add;
 	}
 	grav_mul /= vector_length(pos_dif)*vector_length(pos_dif);
 	Vector *dif_unit = vector_normalize(pos_dif);
@@ -77,13 +83,13 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 		int j;
 		for(j = i+1;j<state->count;j++)
 		{
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 0);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 8);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 9);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 10);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 11);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 12);
-			state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, 13);
+			int x;
+			for(x = 0;x<32;i++){
+				if((x^0b11)==0b01)x++;
+				if((x^0b1100)==0b0100)x+=0b100;
+				if((x^0b110000)==0b010000)x+=0b10000;
+				state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, x);
+			}
 		}
 		//TODO Join near and slow particles
 	}
