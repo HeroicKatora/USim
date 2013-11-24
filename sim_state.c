@@ -56,23 +56,6 @@ Sim_state *initRandom(Sim_state* state)
 	return state;
 }
 
-Sim_state *setParticles(Sim_state* state, Particle** particles, int count)
-{
-	state_particle_free(state);
-	state->count = count;
-	state->particles = particles;
-	return state;
-}
-
-void state_free(Sim_state *sim)
-{
-	if(sim){
-		state_particle_free(sim);
-		free(sim);
-	}
-	sim = NULL;
-}
-
 void state_particles_free(Sim_state *sim)
 {
 	if(sim&&sim->particles){
@@ -84,3 +67,21 @@ void state_particles_free(Sim_state *sim)
 	}
 	sim->particles = NULL;
 }
+
+Sim_state *setParticles(Sim_state* state, Particle** particles, int count)
+{
+	state_particles_free(state);
+	state->count = count;
+	state->particles = particles;
+	return state;
+}
+
+void state_free(Sim_state *sim)
+{
+	if(sim){
+		state_particles_free(sim);
+		free(sim);
+	}
+	sim = NULL;
+}
+
