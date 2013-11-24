@@ -68,6 +68,7 @@ void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *s
 //timestep in Ma
 Sim_state *getNextState(Sim_state *state,double timestep)
 {
+	//Create a copy of the state
 	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier);
 	int i;
 	for(i = 0;i<newState->count;i++){
@@ -85,21 +86,42 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 		{
 			int x;
 			for(x = 0;x<32;i++){
-				if((x^0b11)==0b01)x++;
-				if((x^0b1100)==0b0100)x+=0b100;
-				if((x^0b110000)==0b010000)x+=0b10000;
+				if((x&0b11)==0b01)x++;
+				if((x&0b1100)==0b0100)x+=0b100;
+				if((x&0b110000)==0b010000)x+=0b10000;
 				state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, x);
 			}
+			//TODO move into box again if outside
 		}
-		//TODO Join near and slow particles
 	}
-	//Move particles
+	//move particles
 	for(i = 0;i<newState->count;i++){
 		Vector *movement = vector_mul(newState->particles[i]->speed, timestep);
 		Vector *new_pos = vector_add(movement, newState->particles[i]->position);
 		free(movement);
 		*(newState->particles[i]->position) = *new_pos;
 		free(new_pos);
+	}
+	//join near and slow particles
+	for(i = 0;i<newState->count;i++){
+		int j;
+		for(j = i+1;j<state->count;j++){
+			Particle *i = newState->particles[i];
+			Particle *j = newState->particles[j];
+			Vector *pos_dif = vector_sub(j->position, i->position);
+			Vector *mov_dif = vector_sub(j->speed, i->speed);
+			//TODO proper join check
+			if(vector_length(pos_dif) < 0.0){
+				Particle *joined = particles_join(i, j);
+				*i = *joined;
+				free(joined);
+				*j = *(newState->particles[newState->count]);
+				particle_free(newState->particles[newState->count]);
+				newState->count--;
+				//TODO we now have one unused pointer allocated in memory. Maybe do sth?
+				j--;
+			}
+		}
 	}
 
 	newState->boxSize = state->boxSize*exp(HUBBLE_PER_YEAR*timestep);
