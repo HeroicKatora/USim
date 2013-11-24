@@ -3,7 +3,9 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <math.h>
 
+#include "constants.h"
 #include "particle.h"
 
 typedef struct{

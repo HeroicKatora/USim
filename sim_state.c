@@ -1,6 +1,4 @@
 #include "sim_state.h"
-#include "constants.h"
-#include <math.h>
 
 #include "dbg.h"
 
