@@ -4,7 +4,7 @@
 #include "vector.h"
 
 typedef struct {
-    int mass;
+    double mass;
     Vector *position;
     Vector *speed;
 } Particle;
