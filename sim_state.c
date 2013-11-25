@@ -47,18 +47,14 @@ void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *s
 
 	{
 	Vector *i_mov_dif = vector_mul(dif_unit,grav_mul*b->mass);
-	Vector *i_new_mov = vector_add(a->speed, i_mov_dif);
+	vector_add_true(a->speed, i_mov_dif);
 	free(i_mov_dif);
-	*(speed_a) = *i_new_mov;
-	free(i_new_mov);
 	}
 
 	{
 	Vector *j_mov_dif = vector_mul(dif_unit,-grav_mul*a->mass);
-	Vector *j_new_mov = vector_add(b->speed, j_mov_dif);
+	vector_add_true(b->speed, j_mov_dif);
 	free(j_mov_dif);
-	*(speed_b) = *j_new_mov;
-	free(j_new_mov);
 	}
 }
 
@@ -81,6 +77,7 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 		int j;
 		for(j = i+1;j<state->count;j++)
 		{
+			//TODO multi-thread ?
 			int x;
 			for(x = 0;x<32;i++){
 				if((x&0b11)==0b01)x++;
@@ -88,16 +85,14 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 				if((x&0b110000)==0b010000)x+=0b10000;
 				state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, x);
 			}
-			//TODO move into box again if outside
 		}
 	}
 	//move particles
 	for(i = 0;i<newState->count;i++){
 		Vector *movement = vector_mul(newState->particles[i]->speed, timestep);
-		Vector *new_pos = vector_add(movement, newState->particles[i]->position);
+		vector_add_true(movement, newState->particles[i]->position);
 		free(movement);
-		*(newState->particles[i]->position) = *new_pos;
-		free(new_pos);
+		vector_to_unitcube(newState->particles[i]->position);
 	}
 	//join near and slow particles
 	for(i = 0;i<newState->count;i++){
@@ -105,19 +100,33 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 		for(j = i+1;j<state->count;j++){
 			Particle *i = newState->particles[i];
 			Particle *j = newState->particles[j];
+			//Check if they come into critical distance during next step
 			Vector *pos_dif = vector_sub(j->position, i->position);
 			Vector *mov_dif = vector_sub(j->speed, i->speed);
-			//TODO proper join check
-			if(vector_length(pos_dif) < 0.0){
+			int join = 0;
+			double a = mov_dif->x*mov_dif->x+mov_dif->y*mov_dif->y+mov_dif->z*mov_dif->z;
+			double b = -(pos_dif->x*mov_dif->x+pos_dif->y*mov_dif->y+pos_dif->z*mov_dif->z);
+			double c = pos_dif->x*pos_dif->x+pos_dif->y*pos_dif->y+pos_dif->z*pos_dif->z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
+			if(b*b > 4*a*c){
+				int time1 = (b-sqrt(b*b-4*a*c))/2*a;
+				int time2 = (b+sqrt(b*b-4*a*c))/2*a;
+				if(((time1 >= 0) && time1<timestep)||((time2 >= 0)&&time2<timestep)){
+					join = 1;
+				}
+			}
+			if(join){
 				Particle *joined = particles_join(i, j);
 				*i = *joined;
 				free(joined);
-				*j = *(newState->particles[newState->count]);
-				particle_free(newState->particles[newState->count]);
+				*j = *(newState->particles[newState->count-1]);
+				particle_free(newState->particles[newState->count-1]);
 				newState->count--;
-				//TODO we now have one unused pointer allocated in memory. Maybe do sth?
+				//TODO REVIEW
+				newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
 				j--;
 			}
+			free(pos_dif);
+			free(mov_dif);
 		}
 	}
 
