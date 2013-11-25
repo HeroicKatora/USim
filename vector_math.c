@@ -60,3 +60,13 @@ double vector_dot(Vector *a, Vector *b)
   return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
 }
 
+void vector_to_unitecube(Vector *a)
+{
+  if      (a->x > 1) {a->x = (a->x -1);}
+  else if (a->x < 1) {a->x = (a->x +1);} 
+  if      (a->y > 1) {a->y = (a->y -1);}
+  else if (a->y < 1) {a->y = (a->y +1);}
+  if      (a->z > 1) {a->z = (a->z -1);}
+  else if (a->z < 1) {a->z = (a->z +1);}
+}
+

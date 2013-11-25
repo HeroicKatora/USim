@@ -13,5 +13,6 @@ double vector_length(Vector *a);
 Vector *vector_normalize(Vector *a);
 Vector *vector_cross(Vector *a, Vector *b);
 double vector_dot(Vector *a, Vector *b);
+void vector_to_unitecube(Vector *a);
 
 #endif
