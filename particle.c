@@ -21,6 +21,11 @@ error:
   return NULL;
 }
 
+Particle *particle_join(Particle *a, Particle *b){
+	//TODO implement
+	return particle_create(0,0,0,0);
+}
+
 void particle_free(Particle *p)
 {
   if(p){
