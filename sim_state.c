@@ -15,7 +15,7 @@ Sim_state *state_create_empty(int count, double mass_multiplier)
 
 	return s;
 error:
-	state_free(s);
+	state_free(&s);
 	return NULL;
 }
 
@@ -121,7 +121,7 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 				*pi = *joined;
 				free(joined);
 				*pj = *(newState->particles[newState->count-1]);
-				particle_free(newState->particles[newState->count-1]);
+				particle_free(&(newState->particles[newState->count-1]));
 				newState->count--;
 				//TODO REVIEW
 				newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
@@ -145,7 +145,7 @@ Sim_state *state_initRandom(Sim_state* state)
 		y = (double)(rand())/RAND_MAX;
 		z = (double)(rand())/RAND_MAX;
 		m = 0.99+((double)(rand())/RAND_MAX);
-		particle_free(state->particles[i]);
+		particle_free(&(state->particles[i]));
 		state->particles[i] = particle_create(x,y,z,m);
 	}
 	return state;
@@ -156,14 +156,14 @@ void state_particles_free(Sim_state *sim)
 	if(sim&&sim->particles){
 		int i;
 		for(i = sim->count-1;i>=0;i--){
-			particle_free(sim->particles[i]);
+			particle_free(&(sim->particles[i]));
 		}
 		free(sim->particles);
 	}
 	sim->particles = NULL;
 }
 
-Sim_state *state_setParticles(Sim_state* state, Particle** particles, int count)
+Sim_state *state_setParticles(Sim_state* state, Particle **particles, int count)
 {
 	state_particles_free(state);
 	state->count = count;
@@ -171,11 +171,11 @@ Sim_state *state_setParticles(Sim_state* state, Particle** particles, int count)
 	return state;
 }
 
-void state_free(Sim_state *sim)
+void state_free(Sim_state **sim)
 {
-	if(sim){
-		state_particles_free(sim);
-		free(sim);
+	if(*sim){
+		state_particles_free(*sim);
+		free(*sim);
 	}
 	sim = NULL;
 }

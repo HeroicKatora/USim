@@ -16,8 +16,8 @@ error:
   return NULL;
 }
 
-void vector_free(Vector *v)
+void vector_free(Vector **v)
 {
-  if(v) free(v);
-  v = NULL;
+  if(*v) free(*v);
+  *v = NULL;
 }

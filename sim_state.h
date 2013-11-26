@@ -21,6 +21,6 @@ Sim_state *state_initRandom(Sim_state* state);
 Sim_state *state_setParticles(Sim_state* state, Particle** particles, int count);
 Sim_state *state_createEmpty(int count, double mass_multiplier);
 void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation);
-void state_free(Sim_state *sim);
+void state_free(Sim_state **sim);
 
 #endif

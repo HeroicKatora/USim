@@ -11,6 +11,6 @@ typedef struct {
 
 Particle *particle_create(double x, double y, double z, double mass);
 Particle *particle_join(Particle *a, Particle *b);
-void particle_free(Particle *p);
+void particle_free(Particle **p);
 
 #endif

@@ -17,7 +17,7 @@ Particle *particle_create(double x, double y, double z, double mass)
   return p;
   
 error:
-  particle_free(p);
+  particle_free(&p);
   return NULL;
 }
 
@@ -26,13 +26,13 @@ Particle *particle_join(Particle *a, Particle *b){
 	return particle_create(0,0,0,0);
 }
 
-void particle_free(Particle *p)
+void particle_free(Particle **p)
 {
-  if(p){
-    if(p->position) vector_free(p->position);
-    if(p->speed) vector_free(p->speed);
+  if(*p){
+    if((*p)->position) vector_free((*p)->position);
+    if((*p)->speed) vector_free((*p)->speed);
     
-    free(p);
+    free(*p);
   }
-  p = NULL;
+  *p = NULL;
 }

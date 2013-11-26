@@ -10,6 +10,6 @@ typedef struct {
 } Vector;
 
 Vector *vector_create(double x, double y, double z);
-void vector_free(Vector *v);
+void vector_free(Vector **v);
 
 #endif
