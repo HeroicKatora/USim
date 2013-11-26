@@ -96,12 +96,12 @@ void vector_mul_true(Vector *a, double d)
   a->z *= d;
 }
 
-void *vector_normalize_true(Vector *a)
+void vector_normalize_true(Vector *a)
 {
   return vector_div_true(a, vector_length(a));
 }
 
-void *vector_cross_true(Vector *a, Vector *b)
+void vector_cross_true(Vector *a, Vector *b)
 {
   a->x = (a->y * b->z) - (a->z * b->y);
   a->y = (a->z * b->x) - (a->x * b->z);

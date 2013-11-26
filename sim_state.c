@@ -25,36 +25,36 @@ Every two bit of translation refer to one axis(x are bits 3 and 4, y are 5&6,..)
 The first bit toggles translation on and off, the seconds one describes which translation is used.
 1 means b is translated by one cube in positive direction, 0 the other way.*/
 void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation){
-	Vector *pos_dif = vector_sub(b->position,a->position);
+	Vector pos_dif = *b->position;
+	vector_sub_true(&pos_dif,a->position);
 	if((translation&0b10)==0b10){
 		int add = 1;
 		if((translation&0b1)==0)add*=-1;
-		pos_dif->z += add;
+		pos_dif.z += add;
 	}
 	if((translation&0b1000)==0b1000){
 		int add = 1;
 		if((translation&0b100)==0)add*=-1;
-		pos_dif->y += add;
+		pos_dif.y += add;
 	}
 	if((translation&0b100000)==0b100000){
 		int add = 1;
 		if((translation&0b10000)==0)add*=-1;
-		pos_dif->x += add;
+		pos_dif.x += add;
 	}
-	grav_mul /= vector_length(pos_dif)*vector_length(pos_dif);
-	Vector *dif_unit = vector_normalize(pos_dif);
-	free(pos_dif);
+	grav_mul /= vector_length(&pos_dif)*vector_length(&pos_dif);
+	vector_normalize_true(&pos_dif);
 
 	{
-	Vector *i_mov_dif = vector_mul(dif_unit,grav_mul*b->mass);
-	vector_add_true(a->speed, i_mov_dif);
-	free(i_mov_dif);
+		Vector i_mov_dif = pos_dif;
+		vector_mul_true(&i_mov_dif,grav_mul*b->mass);
+		vector_add_true(speed_a, &i_mov_dif);
 	}
 
 	{
-	Vector *j_mov_dif = vector_mul(dif_unit,-grav_mul*a->mass);
-	vector_add_true(b->speed, j_mov_dif);
-	free(j_mov_dif);
+		Vector j_mov_dif = pos_dif;
+		vector_mul_true(&j_mov_dif,-grav_mul*a->mass);
+		vector_add_true(speed_b, &j_mov_dif);
 	}
 }
 
@@ -89,24 +89,26 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 	}
 	//move particles
 	for(i = 0;i<newState->count;i++){
-		Vector *movement = vector_mul(newState->particles[i]->speed, timestep);
-		vector_add_true(movement, newState->particles[i]->position);
-		free(movement);
+		Vector movement = *newState->particles[i]->speed;
+		vector_mul_true(&movement, timestep);
+		vector_add_true(newState->particles[i]->position, &movement);
 		vector_to_unitcube(newState->particles[i]->position);
 	}
 	//join near and slow particles
 	for(i = 0;i<newState->count;i++){
 		int j;
 		for(j = i+1;j<state->count;j++){
-			Particle *i = newState->particles[i];
-			Particle *j = newState->particles[j];
+			Particle *pi = newState->particles[i];
+			Particle *pj = newState->particles[j];
 			//Check if they come into critical distance during next step
-			Vector *pos_dif = vector_sub(j->position, i->position);
-			Vector *mov_dif = vector_sub(j->speed, i->speed);
+			Vector pos_dif = *(pj->position);
+			vector_sub(&pos_dif, pi->position);
+			Vector mov_dif = *(pj->speed);
+			vector_sub(&mov_dif, pi->speed);
 			int join = 0;
-			double a = mov_dif->x*mov_dif->x+mov_dif->y*mov_dif->y+mov_dif->z*mov_dif->z;
-			double b = -(pos_dif->x*mov_dif->x+pos_dif->y*mov_dif->y+pos_dif->z*mov_dif->z);
-			double c = pos_dif->x*pos_dif->x+pos_dif->y*pos_dif->y+pos_dif->z*pos_dif->z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
+			double a = mov_dif.x*mov_dif.x+mov_dif.y*mov_dif.y+mov_dif.z*mov_dif.z;
+			double b = -2*(pos_dif.x*mov_dif.x+pos_dif.y*mov_dif.y+pos_dif.z*mov_dif.z);
+			double c = pos_dif.x*pos_dif.x+pos_dif.y*pos_dif.y+pos_dif.z*pos_dif.z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
 			if(b*b > 4*a*c){
 				int time1 = (b-sqrt(b*b-4*a*c))/2*a;
 				int time2 = (b+sqrt(b*b-4*a*c))/2*a;
@@ -115,18 +117,16 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 				}
 			}
 			if(join){
-				Particle *joined = particles_join(i, j);
-				*i = *joined;
+				Particle *joined = particle_join(pi, pj);
+				*pi = *joined;
 				free(joined);
-				*j = *(newState->particles[newState->count-1]);
+				*pj = *(newState->particles[newState->count-1]);
 				particle_free(newState->particles[newState->count-1]);
 				newState->count--;
 				//TODO REVIEW
 				newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
 				j--;
 			}
-			free(pos_dif);
-			free(mov_dif);
 		}
 	}
 
