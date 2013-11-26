@@ -82,3 +82,29 @@ void vector_sub_true(Vector *a, Vector *b){
 	a->z -= b->z;
 }
 
+void vector_div_true(Vector *a, double d)
+{
+  a->x /= d;
+  a->y /= d;
+  a->z /= d;
+}
+
+void vector_mul_true(Vector *a, double d)
+{
+  a->x *= d;
+  a->y *= d;
+  a->z *= d;
+}
+
+void *vector_normalize_true(Vector *a)
+{
+  return vector_div_true(a, vector_length(a));
+}
+
+void *vector_cross_true(Vector *a, Vector *b)
+{
+  a->x = (a->y * b->z) - (a->z * b->y);
+  a->y = (a->z * b->x) - (a->x * b->z);
+  a->z = (a->x * b->y) - (a->y * b->x);
+}
+
