@@ -13,6 +13,9 @@ Particle *particle_create(double x, double y, double z, double mass)
   p->speed = vector_create(0, 0, 0);
   check_mem(p->speed);
   
+  p->speed_old = vector_create(0, 0, 0);
+  check_mem(p->speed_old);
+
   p->mass = mass;
   return p;
   
@@ -29,8 +32,9 @@ Particle *particle_join(Particle *a, Particle *b){
 void particle_free(Particle **p)
 {
   if(*p){
-    if((*p)->position) vector_free((*p)->position);
-    if((*p)->speed) vector_free((*p)->speed);
+    if((*p)->position) vector_free(&(*p)->position);
+    if((*p)->speed) vector_free(&(*p)->speed);
+    if((*p)->speed_old) vector_free(&(*p)->speed_old);
     
     free(*p);
   }

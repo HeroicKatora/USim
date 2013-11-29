@@ -77,7 +77,7 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 		int j;
 		for(j = i+1;j<state->count;j++)
 		{
-			//TODO multi-thread ?
+			//TODO multi-thread or multi compute, so move whole block to new function?
 			int x;
 			for(x = 0;x<32;i++){
 				if((x&0b11)==0b01)x++;
@@ -90,9 +90,11 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 	//move particles
 	for(i = 0;i<newState->count;i++){
 		Vector movement = *newState->particles[i]->speed;
-		vector_mul_true(&movement, timestep);
+		vector_add_true(&movement, newState->particles[i]->speed_old);
+		vector_mul_true(&movement, timestep/2);
 		vector_add_true(newState->particles[i]->position, &movement);
 		vector_to_unitcube(newState->particles[i]->position);
+		*newState->particles[i]->speed_old = *newState->particles[i]->speed;
 	}
 	//join near and slow particles
 	for(i = 0;i<newState->count;i++){

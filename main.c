@@ -22,7 +22,7 @@ int main(int argc, char **argv)
   getchar();
   
   for(i = 0; i < c; i++){
-    particle_free(vector[i]);
+    particle_free(&vector[i]);
   }
 
   return 0;  

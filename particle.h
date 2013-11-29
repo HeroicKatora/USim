@@ -7,6 +7,7 @@ typedef struct {
     double mass;
     Vector *position;
     Vector *speed;
+    Vector *speed_old;
 } Particle;
 
 Particle *particle_create(double x, double y, double z, double mass);

@@ -12,7 +12,7 @@ Vector *vector_create(double x, double y, double z)
   return v;
   
 error:
-  vector_free(v);
+  vector_free(&v);
   return NULL;
 }
 
