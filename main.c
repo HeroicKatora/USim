@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "particle.h"
+#include "sim_state.h"
 
 #include "dbg.h"
 
@@ -10,20 +10,12 @@ int main(int argc, char **argv)
   printf("##### DEBUG VERSION #####\n");
   #endif
 
-  int c = 1000000;
-  
-  int i = 0;
-  Particle *vector[c];
-  for(i = 0; i < c; i++){
-    vector[i] = particle_create(i, i, i, i*2);
-  }
-  
-  printf("Press any key to continue...");
-  getchar();
-  
-  for(i = 0; i < c; i++){
-    particle_free(&vector[i]);
-  }
+  int c = 50;
+  Sim_state *state = state_create_empty(c, 1);
+  check_mem(state);
+  state_free(&state);
 
   return 0;  
+error:
+  return 1;
 }
