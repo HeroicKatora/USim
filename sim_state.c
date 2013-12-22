@@ -104,10 +104,11 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 			Particle *pj = newState->particles[j];
 			//Check if they come into critical distance during next step
 			Vector pos_dif = *(pj->position);
-			vector_sub(&pos_dif, pi->position);
+			vector_sub(&pos_dif, pi->position,&pos_dif);
 			Vector mov_dif = *(pj->speed);
-			vector_sub(&mov_dif, pi->speed);
+			vector_sub(&mov_dif, pi->speed,&mov_dif);
 			int join = 0;
+			//TODO review
 			double a = mov_dif.x*mov_dif.x+mov_dif.y*mov_dif.y+mov_dif.z*mov_dif.z;
 			double b = -2*(pos_dif.x*mov_dif.x+pos_dif.y*mov_dif.y+pos_dif.z*mov_dif.z);
 			double c = pos_dif.x*pos_dif.x+pos_dif.y*pos_dif.y+pos_dif.z*pos_dif.z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
@@ -119,7 +120,7 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 				}
 			}
 			if(join){
-				Particle *joined = particle_join(pi, pj);
+				Particle *joined = particle_join(pi, pj, NULL);
 				*pi = *joined;
 				free(joined);
 				*pj = *(newState->particles[newState->count-1]);

@@ -7,8 +7,14 @@ all: CFLAGS += -D__DEBUG__
 all: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o usim.bin -lm
 
+exe: $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o usim.exe -lm
+	
 release: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o usim.bin
+	
+release_exe:  $(OBJECTS)
+	$(CC) $(CFLAGS) $(OBJECTS) -o usim.exe
 	
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@

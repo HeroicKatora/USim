@@ -2,39 +2,43 @@
 
 #include "dbg.h"
 
-Vector *vector_add(Vector *a, Vector *b)
+Vector *vector_add(Vector *a, Vector *b, Vector *write)
 {
-  double x = a->x + b-> x;
-  double y = a->y + b-> y;
-  double z = a->z + b-> z;
-  return vector_create(x, y, z);
+	if(!write) write = vector_create(0,0,0);
+	write->x = a->x + b-> x;
+	write->y = a->y + b-> y;
+	write->z = a->z + b-> z;
+ 	return write;
 }
 
-Vector *vector_sub(Vector *a, Vector *b)
+Vector *vector_sub(Vector *a, Vector *b, Vector *write)
 {
-  double x = a->x - b-> x;
-  double y = a->y - b-> y;
-  double z = a->z - b-> z;
-  return vector_create(x, y, z);
+	if(!write) write = vector_create(0,0,0);
+	write->x = a->x - b-> x;
+	write->y = a->y - b-> y;
+	write->z = a->z - b-> z;
+	return write;
 }
 
-Vector *vector_div(Vector *a, double d)
+Vector *vector_div(Vector *a, double d, Vector *write)
 {
-  double x = a->x / d;
-  double y = a->y / d;
-  double z = a->z / d;
-  return vector_create(x, y, z);
+	if(!write) write = vector_create(0,0,0);
+	write->x = a->x / d;
+	write->y = a->y / d;
+	write->z = a->z / d;
+	return write;
 }
 
-Vector *vector_mul(Vector *a, double d)
+Vector *vector_mul(Vector *a, double d, Vector *write)
 {
-  double x = a->x * d;
-  double y = a->y * d;
-  double z = a->z * d;
-  return vector_create(x, y, z);
+	if(!write) write = vector_create(0,0,0);
+	write->x = a->x * d;
+	write->y = a->y * d;
+	write->z = a->z * d;
+	return write;
 }
 
-double vector_length(Vector *a)
+inline double vector_length(Vector *a)
 {
   double x = a->x;
   double y = a->y;
@@ -42,20 +46,21 @@ double vector_length(Vector *a)
   return sqrt(x*x + y*y + z*z);
 }
 
-Vector *vector_normalize(Vector *a)
+inline Vector *vector_normalize(Vector *a)
 {
-  return vector_div(a, vector_length(a));
+	return vector_div(a, vector_length(a), NULL);
 }
 
-Vector *vector_cross(Vector *a, Vector *b)
+Vector *vector_cross(Vector *a, Vector *b, Vector *write)
 {
-  double x = (a->y * b->z) - (a->z * b->y);
-  double y = (a->z * b->x) - (a->x * b->z);
-  double z = (a->x * b->y) - (a->y * b->x);
-  return vector_create(x, y, z);
+	if(!write) write = vector_create(0,0,0);
+	write->x = (a->y * b->z) - (a->z * b->y);
+	write->y = (a->z * b->x) - (a->x * b->z);
+	write->z = (a->x * b->y) - (a->y * b->x);
+	return write;
 }
 
-double vector_dot(Vector *a, Vector *b)
+inline double vector_dot(Vector *a, Vector *b)
 {
   return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
 }
@@ -70,41 +75,26 @@ void vector_to_unitcube(Vector *a)
   else if (a->z < 1) {a->z = (a->z +1);}
 }
 
-void vector_add_true(Vector *a, Vector *b){
-	a->x += b->x;
-	a->y += b->y;
-	a->z += b->z;
+inline Vector *vector_add_true(Vector *a, Vector *b){
+	return vector_add(a,b,a);
 }
 
-void vector_sub_true(Vector *a, Vector *b){
-	a->x -= b->x;
-	a->y -= b->y;
-	a->z -= b->z;
+inline Vector *vector_sub_true(Vector *a, Vector *b){
+	return vector_sub(a,b,a);
 }
 
-void vector_div_true(Vector *a, double d)
+inline Vector *vector_div_true(Vector *a, double d)
 {
-  a->x /= d;
-  a->y /= d;
-  a->z /= d;
+	return vector_div(a,d,a);
 }
 
-void vector_mul_true(Vector *a, double d)
+inline Vector *vector_mul_true(Vector *a, double d)
 {
-  a->x *= d;
-  a->y *= d;
-  a->z *= d;
+	return vector_mul(a,d,a);
 }
 
-void vector_normalize_true(Vector *a)
+inline Vector *vector_normalize_true(Vector *a)
 {
   return vector_div_true(a, vector_length(a));
-}
-
-void vector_cross_true(Vector *a, Vector *b)
-{
-  a->x = (a->y * b->z) - (a->z * b->y);
-  a->y = (a->z * b->x) - (a->x * b->z);
-  a->z = (a->x * b->y) - (a->y * b->x);
 }
 

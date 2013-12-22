@@ -24,10 +24,35 @@ error:
   return NULL;
 }
 
-Particle *particle_join(Particle *a, Particle *b){
-	//TODO implement
-	return particle_create(0,0,0,0);
+Particle *particle_join(Particle *a, Particle *b, Particle *write){
+	if(!write) write = particle_create(0,0,0,a->mass+b->mass);
+	{
+		Vector posA, posB;
+		vector_mul(a->position, a->mass, &posA);
+		vector_mul(b->position, b->mass, &posB);
+		vector_add_true(write->position, &posA);
+		vector_add_true(write->position, &posB);
+		vector_div_true(write->position, write->mass);
+	}
+	{
+		Vector movA,movB;
+		vector_mul(a->speed,a->mass,&movA);
+		vector_mul(b->speed,b->mass,&movB);
+		vector_add_true(write->speed, &movA);
+		vector_add_true(write->speed, &movB);
+		vector_div_true(write->speed, write->mass);
+	}
+	{
+		Vector movA,movB;
+		vector_mul(a->speed_old,a->mass,&movA);
+		vector_mul(b->speed_old,b->mass,&movB);
+		vector_add_true(write->speed_old, &movA);
+		vector_add_true(write->speed_old, &movB);
+		vector_div_true(write->speed_old, write->mass);
+	}
+	return write;
 }
+
 
 void particle_free(Particle **p)
 {
