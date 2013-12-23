@@ -10,9 +10,13 @@ int main(int argc, char **argv)
   printf("##### DEBUG VERSION #####\n");
   #endif
 
-  int c = 50;
+  int c = 500000;
   Sim_state *state = state_create_empty(c, 1);
   check_mem(state);
+  
+  state = state_initRandom(state);
+  check_mem(state);
+  
   state_free(&state);
 
   return 0;  
