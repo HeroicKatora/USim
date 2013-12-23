@@ -79,7 +79,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 		{
 			//TODO multi-thread or multi compute, so move whole block to new function?
 			int x;
-			for(x = 0;x<32;i++){
+			for(x = 0;x<32;x++){
 				if((x&0b11)==0b01)x++;
 				if((x&0b1100)==0b0100)x+=0b100;
 				if((x&0b110000)==0b010000)x+=0b10000;
@@ -112,7 +112,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 			double a = mov_dif.x*mov_dif.x+mov_dif.y*mov_dif.y+mov_dif.z*mov_dif.z;
 			double b = -2*(pos_dif.x*mov_dif.x+pos_dif.y*mov_dif.y+pos_dif.z*mov_dif.z);
 			double c = pos_dif.x*pos_dif.x+pos_dif.y*pos_dif.y+pos_dif.z*pos_dif.z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
-			if(b*b > 4*a*c){
+			if(b*b >= 4*a*c){
 				int time1 = (b-sqrt(b*b-4*a*c))/2*a;
 				int time2 = (b+sqrt(b*b-4*a*c))/2*a;
 				if(((time1 >= 0) && time1<timestep)||((time2 >= 0)&&time2<timestep)){
@@ -120,9 +120,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 				}
 			}
 			if(join){
-				Particle *joined = particle_join(pi, pj, NULL);
-				*pi = *joined;
-				free(joined);
+				particle_join(pi, pj, pi);
 				*pj = *(newState->particles[newState->count-1]);
 				particle_free(&(newState->particles[newState->count-1]));
 				newState->count--;
