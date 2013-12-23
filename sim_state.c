@@ -59,7 +59,7 @@ void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *s
 }
 
 //timestep in Ma
-Sim_state *getNextState(Sim_state *state,double timestep)
+Sim_state *get_next_state(Sim_state *state,double timestep)
 {
 	//Create a copy of the state
 	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier);
@@ -137,7 +137,7 @@ Sim_state *getNextState(Sim_state *state,double timestep)
 	return newState;
 }
 
-Sim_state *state_initRandom(Sim_state* state)
+Sim_state *state_init_random(Sim_state* state)
 {
 
 	srand(time(NULL));
@@ -166,7 +166,7 @@ void state_particles_free(Sim_state *sim)
 	sim->particles = NULL;
 }
 
-Sim_state *state_setParticles(Sim_state* state, Particle **particles, int count)
+Sim_state *state_set_particles(Sim_state* state, Particle **particles, int count)
 {
 	state_particles_free(state);
 	state->count = count;

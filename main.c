@@ -11,10 +11,10 @@ int main(int argc, char **argv)
   #endif
 
   int c = 500000;
-  Sim_state *state = state_create_empty(c, 1);
+  Sim_state *state = state_create_empty(c, (double)1.0);
   check_mem(state);
   
-  state = state_initRandom(state);
+  state = state_init_random(state);
   check_mem(state);
   
   state_free(&state);
