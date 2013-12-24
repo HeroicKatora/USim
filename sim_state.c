@@ -2,7 +2,7 @@
 
 #include "dbg.h"
 
-Sim_state *state_create_empty(int count, double mass_multiplier)
+Sim_state *state_create_empty(int count, double mass_multiplier, double box_size)
 {
 	Sim_state *s = (Sim_state *)malloc(sizeof(Sim_state));
 	check_mem(s);
@@ -12,6 +12,7 @@ Sim_state *state_create_empty(int count, double mass_multiplier)
 
 	s->count = count;
 	s->mass_multiplier = mass_multiplier;
+	s->box_size = box_size > 0?box_size:100;
 
 	return s;
 error:
@@ -59,17 +60,18 @@ void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *s
 }
 
 //timestep in Ma
-Sim_state *get_next_state(Sim_state *state,double timestep)
+Sim_state *get_next_state(Sim_state *state, double timestep)
 {
 	//Create a copy of the state
-	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier);
+	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier, state->box_size*exp(HUBBLE_PER_YEAR*timestep));
 	int i;
 	for(i = 0;i<newState->count;i++){
 		Vector *pos = state->particles[i]->position;
 		newState->particles[i] = particle_create(pos->x,pos->y,pos->z,state->particles[i]->mass);
 	}
 	//Calculate new movement of particles
-	double grav_multiplier = GRAVITATION_CONSTANT/(state->boxSize*state->boxSize);
+	//TODO better grav multiplier by integrating box size over time step
+	double grav_multiplier = GRAVITATION_CONSTANT/(state->box_size*state->box_size);
 	grav_multiplier *= state->mass_multiplier*timestep;
 
 	for(i = 0;i<state->count;i++)
@@ -99,7 +101,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 	//join near and slow particles
 	for(i = 0;i<newState->count;i++){
 		int j;
-		for(j = i+1;j<state->count;j++){
+		for(j = i+1;j<newState->count;j++){
 			Particle *pi = newState->particles[i];
 			Particle *pj = newState->particles[j];
 			//Check if they come into critical distance during next step
@@ -111,7 +113,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 			//TODO review
 			double a = mov_dif.x*mov_dif.x+mov_dif.y*mov_dif.y+mov_dif.z*mov_dif.z;
 			double b = -2*(pos_dif.x*mov_dif.x+pos_dif.y*mov_dif.y+pos_dif.z*mov_dif.z);
-			double c = pos_dif.x*pos_dif.x+pos_dif.y*pos_dif.y+pos_dif.z*pos_dif.z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->boxSize*newState->boxSize);
+			double c = pos_dif.x*pos_dif.x+pos_dif.y*pos_dif.y+pos_dif.z*pos_dif.z-CRITICAL_DISTANCE*CRITICAL_DISTANCE/(newState->box_size*newState->box_size);
 			if(b*b >= 4*a*c){
 				int time1 = (b-sqrt(b*b-4*a*c))/2*a;
 				int time2 = (b+sqrt(b*b-4*a*c))/2*a;
@@ -131,7 +133,7 @@ Sim_state *get_next_state(Sim_state *state,double timestep)
 		}
 	}
 
-	newState->boxSize = state->boxSize*exp(HUBBLE_PER_YEAR*timestep);
+	newState->box_size = state->box_size*exp(HUBBLE_PER_YEAR*timestep);
 	return newState;
 }
 
@@ -145,7 +147,7 @@ Sim_state *state_init_random(Sim_state* state)
 		x = (double)(rand())/RAND_MAX;
 		y = (double)(rand())/RAND_MAX;
 		z = (double)(rand())/RAND_MAX;
-		m = 0.99+((double)(rand())/RAND_MAX);
+		m = 0.99+((double)(rand())/RAND_MAX/50);
 		particle_free(&(state->particles[i]));
 		state->particles[i] = particle_create(x,y,z,m);
 	}

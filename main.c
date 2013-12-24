@@ -10,14 +10,17 @@ int main(int argc, char **argv)
   printf("##### DEBUG VERSION #####\n");
   #endif
 
-  int c = 500000;
+  int c = 500;
   Sim_state *state = state_create_empty(c, (double)1.0);
   check_mem(state);
   
   state = state_init_random(state);
   check_mem(state);
   
+  Sim_state *state_new = get_next_state(state, (double)1.0);
   state_free(&state);
+
+  state_free(&state_new);
 
   return 0;  
 error:
