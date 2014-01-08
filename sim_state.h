@@ -10,9 +10,10 @@
 #include "vector_math.h"
 
 typedef struct{
-	int box_size; //in k light years
+	double box_size; //in k light years
 	double mass_multiplier;
 	int count;
+	int step_count;
 	Particle** particles;
 } Sim_state;
 
@@ -20,7 +21,8 @@ Sim_state *get_next_state(Sim_state *state, double timestep);
 Sim_state *state_init_random(Sim_state* state);
 Sim_state *state_set_particles(Sim_state* state, Particle** particles, int count);
 Sim_state *state_create_empty(int count, double mass_multiplier, double box_size);
-void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation);
+inline void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation);
 void state_free(Sim_state **sim);
+void state_write(Sim_state *sim);
 
 #endif

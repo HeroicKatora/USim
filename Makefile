@@ -17,10 +17,11 @@ release_exe:  $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o usim.exe
 	
 %.o : %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY:
 clean:
 	rm -f *.o
 	rm -f *~
 	rm -f usim.bin
+	rm -f usim.exe

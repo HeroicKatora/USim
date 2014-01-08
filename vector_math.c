@@ -67,12 +67,12 @@ inline double vector_dot(Vector *a, Vector *b)
 
 void vector_to_unitcube(Vector *a)
 {
-  if      (a->x > 1) {a->x = (a->x -1);}
-  else if (a->x < 1) {a->x = (a->x +1);} 
-  if      (a->y > 1) {a->y = (a->y -1);}
-  else if (a->y < 1) {a->y = (a->y +1);}
-  if      (a->z > 1) {a->z = (a->z -1);}
-  else if (a->z < 1) {a->z = (a->z +1);}
+  a->x -= (int)(a->x);
+  if (a->x < 0) {a->x = (a->x +1);}
+  a->y -= (int)(a->y);
+  if (a->y < 0) {a->y = (a->y +1);}
+  a->z -= (int)(a->z);
+  if (a->z < 0) {a->z = (a->z +1);}
 }
 
 inline Vector *vector_add_true(Vector *a, Vector *b){
