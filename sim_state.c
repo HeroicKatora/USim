@@ -123,7 +123,6 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 			if(b*b >= 4*a*c){
 				double time1 = (b-sqrt(b*b-4*a*c))/2*a;
 				double time2 = (b+sqrt(b*b-4*a*c))/2*a;
-				printf("Valid join solutions %f , %f \n", time1, time2);
 				if(((time1 >= 0) && time1<timestep)||((time2 >= 0)&&time2<timestep)){
 					join = 1;
 				}
@@ -135,8 +134,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 				printf("Joining performed\n");
 				newState->count--;
 				//TODO CRITICAL REVIEW!!!!!!!!!!! Something is seriously wrong when we join Particles. It causes a BEX a few (unknown how many) states later.
-				newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
-				printf("%i\n", sizeof(newState->particles)/sizeof(Particle*));
+				//newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
 				j--;
 			}
 		}
@@ -192,7 +190,7 @@ void state_free(Sim_state **sim)
 }
 
 void state_write(Sim_state *sim){
-	char *filename;
+	char *filename = calloc(30, sizeof(char));
 	sprintf(filename, "SimulationState%i .obj", sim->step_count);
 	FILE *f = fopen(filename,"w");
 	free(filename);
@@ -203,6 +201,7 @@ void state_write(Sim_state *sim){
 	}
 	fclose(f);
 	free(f);
+	free(filename);
 	return;
 error:
 	return;
