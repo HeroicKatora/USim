@@ -98,3 +98,12 @@ inline Vector *vector_normalize_true(Vector *a)
   return vector_div_true(a, vector_length(a));
 }
 
+Vector *vector_shorten_in_cube(Vector *a, Vector *write){
+	if(!write)write = vector_create(0,0,0);
+	*write = *a;
+	if(write->x > 0.5)write->x -= 1;
+	if(write->y > 0.5)write->y -= 1;
+	if(write->z > 0.5)write->z -= 1;
+	return write;
+}
+

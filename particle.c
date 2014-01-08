@@ -25,33 +25,56 @@ error:
 }
 
 Particle *particle_join(Particle *a, Particle *b, Particle *write){
+	/*
 	if(!write) write = particle_create(0,0,0,a->mass+b->mass);
-	{
-		Vector posA, posB;
-		vector_mul(a->position, a->mass, &posA);
-		vector_mul(b->position, b->mass, &posB);
-		vector_add_true(&posA, &posB);
-		*write->position = posA;
-		vector_div_true(write->position, a->mass+ b->mass);
-	}
-	{
-		Vector movA,movB;
-		vector_mul(a->speed,a->mass,&movA);
-		vector_mul(b->speed,b->mass,&movB);
-		vector_add_true(&movA, &movB);
-		*write->speed = movA;
-		vector_div_true(write->speed, a->mass+ b->mass);
-	}
-	{
-		Vector movA,movB;
-		vector_mul(a->speed_old,a->mass,&movA);
-		vector_mul(b->speed_old,b->mass,&movB);
-		vector_add_true(&movA, &movB);
-		*write->speed_old = movA;
-		vector_div_true(write->speed_old, a->mass+ b->mass);
-	}
+	Vector posA, posB;
+	vector_mul(a->position, a->mass, &posA);
+	vector_mul(b->position, b->mass, &posB);
+	vector_add_true(&posA, &posB);
+	*(write->position) = posA;
+	vector_div_true(write->position, a->mass+ b->mass);
+	Vector movA,movB;
+	vector_mul(a->speed,a->mass,&movA);
+	vector_mul(b->speed,b->mass,&movB);
+	vector_add_true(&movA, &movB);
+	*(write->speed) = movA;
+	vector_div_true(write->speed, a->mass+ b->mass);
+	vector_mul(a->speed_old,a->mass,&movA);
+	vector_mul(b->speed_old,b->mass,&movB);
+	vector_add_true(&movA, &movB);
+	*(write->speed_old) = movA;
+	vector_div_true(write->speed_old, a->mass+ b->mass);
 	write->mass = a->mass+b->mass;
-	return write;
+	return write;*/
+
+
+	//Ersatz für echten join. Macht das erste Partikel zur Summe beider und setzt dann das
+	//zweite außerhalb des Würfels hin und seine Masse auf 0. Dies kann dann von den
+	//Schleifen jeweils ignoriert werden.
+	//write wird ignoriert
+	Vector pos_dif;
+	vector_sub(b->position, a->position, &pos_dif);
+	vector_shorten_in_cube(&pos_dif, &pos_dif);
+	vector_mul_true(&pos_dif,1-(a->mass/(a->mass+b->mass)));
+	vector_add_true(a->position, &pos_dif);
+	vector_to_unitcube(a->position);
+	Vector movA,movB;
+	vector_mul(a->speed,a->mass,&movA);
+	vector_mul(b->speed,b->mass,&movB);
+	vector_add_true(&movA, &movB);
+	*(a->speed) = movA;
+	vector_div_true(a->speed, a->mass+ b->mass);
+	vector_mul(a->speed_old,a->mass,&movA);
+	vector_mul(b->speed_old,b->mass,&movB);
+	vector_add_true(&movA, &movB);
+	*(a->speed_old) = movA;
+	vector_div_true(a->speed_old, a->mass+ b->mass);
+	a->mass = a->mass+b->mass;
+	b->position->x = 0;
+	b->position->y = 0;
+	b->position->z = 0;
+	b->mass = 0;
+	return a;
 }
 
 

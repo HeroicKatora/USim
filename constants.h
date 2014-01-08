@@ -6,6 +6,6 @@
 #define SUNMASS              1.98892E30      //in kg
 #define PARSEC_TO_LY         3.62
 #define LIGHTYEAR            9.4605284E15
-#define CRITICAL_DISTANCE	 1E1			 //in lightyears
+#define CRITICAL_DISTANCE	 1E-8			 //in lightyears
 
 #endif

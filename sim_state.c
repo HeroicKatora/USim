@@ -8,7 +8,6 @@
  */
 Sim_state *state_create_empty(int count, double mass_multiplier, double box_size)
 {
-	printf("Creating State with %i, %f, %f \n",count, mass_multiplier, box_size);
 	Sim_state *s = (Sim_state *)malloc(sizeof(Sim_state));
 	check_mem(s);
 
@@ -34,6 +33,7 @@ The first bit toggles translation on and off, the seconds one describes which tr
 inline void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation){
 	Vector pos_dif;
 	vector_sub(b->position, a->position, &pos_dif);
+	vector_shorten_in_cube(&pos_dif, &pos_dif);
 	if((translation&0b10)==0b10){
 		int add = ((translation&0b01)==0)?-1:1;
 		pos_dif.z += add;
@@ -48,45 +48,38 @@ inline void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Ve
 	}
 	vector_normalize_true(&pos_dif);
 	grav_mul /= pow(vector_length(&pos_dif),2);
-	{
-		Vector i_mov_dif = pos_dif;
-		vector_mul_true(&i_mov_dif,grav_mul*b->mass);
-		vector_add_true(speed_a, &i_mov_dif);
-	}
-
-	{
-		Vector j_mov_dif = pos_dif;
-		vector_mul_true(&j_mov_dif,-grav_mul*a->mass);
-		vector_add_true(speed_b, &j_mov_dif);
-	}
+	Vector i_mov_dif = pos_dif;
+	vector_mul_true(&i_mov_dif,grav_mul*b->mass);
+	vector_add_true(speed_a, &i_mov_dif);
+	i_mov_dif = pos_dif;
+	vector_mul_true(&i_mov_dif,-grav_mul*a->mass);
+	vector_add_true(speed_b, &i_mov_dif);
 }
 
 //timestep in Ma
 Sim_state *get_next_state(Sim_state *state, double timestep)
 {
-	printf("Copy creating with box_size: %f\n",state->box_size);
 	//Create a copy of the state
 	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier, state->box_size*exp(HUBBLE_PER_YEAR*timestep));
 	newState->step_count = state->step_count+1;
 	int i;
-	printf("Copy filling %i\n", newState->count);
 	for(i = 0;i<newState->count;i++){
-		printf("%i \n",state->particles[i]->position);
-		printf("%i",i);
 		Vector *pos = state->particles[i]->position;
 		newState->particles[i] = particle_create(pos->x,pos->y,pos->z,state->particles[i]->mass);
-		printf("\n");
+		*(newState->particles[i]->speed) = *(state->particles[i]->speed);
+		*(newState->particles[i]->speed_old) = *(state->particles[i]->speed);
 	}
 	//Calculate new movement of particles
 	//TODO better grav multiplier by integrating box size over time step
 	double grav_multiplier = GRAVITATION_CONSTANT/(state->box_size*state->box_size);
 	grav_multiplier *= state->mass_multiplier*timestep;
-	printf("Beginning loops\n");
 	for(i = 0;i<state->count;i++)
 	{
+		if(state->particles[i]->mass == 0) continue;
 		int j;
 		for(j = i+1;j<state->count;j++)
 		{
+			if(state->particles[j]->mass == 0) continue;
 			//TODO multi-thread or multi compute, so move whole block to new function?
 			int x;
 			for(x = 0;x<64;x++){
@@ -99,6 +92,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 	}
 	//move particles
 	for(i = 0;i<newState->count;i++){
+		if(newState->particles[i]->mass == 0) continue;
 		Vector movement = *newState->particles[i]->speed;
 		vector_add_true(&movement, newState->particles[i]->speed_old);
 		vector_mul_true(&movement, timestep/2);
@@ -106,7 +100,6 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 		vector_to_unitcube(newState->particles[i]->position);
 		*newState->particles[i]->speed_old = *newState->particles[i]->speed;
 	}
-	printf("Joining: \n");
 	//join near and slow particles
 	for(i = 0;i<newState->count;i++){
 		int j;
@@ -114,8 +107,11 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 			Particle *pi = newState->particles[i];
 			Particle *pj = newState->particles[j];
 			//Check if they come into critical distance during next step
+
 			Vector pos_dif = *(pj->position);
 			vector_sub(&pos_dif, pi->position,&pos_dif);
+			vector_shorten_in_cube(&pos_dif, &pos_dif);
+			//Do this to get the shortest positional difference
 			Vector mov_dif = *(pj->speed);
 			vector_sub(&mov_dif, pi->speed,&mov_dif);
 			int join = 0;
@@ -132,17 +128,16 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 			}
 			if(join){
 				particle_join(pi, pj, pi);
-				*pj = *(newState->particles[newState->count-1]);
-				particle_free(&(newState->particles[newState->count-1]));
+				//*pj = *(newState->particles[newState->count-1]);
+				//particle_free(&(newState->particles[newState->count-1]));
 				printf("Joining performed\n");
-				newState->count = newState->count-1;
+				//newState->count = newState->count-1;
 				//TODO CRITICAL REVIEW!!!!!!!!!!! Something is seriously wrong when we join Particles. It causes a BEX a few (unknown how many) states later.
 				//newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
-				j--;
+				//j--;
 			}
 		}
 	}
-	printf("Box has size:%f\n",newState->box_size);
 	return newState;
 }
 
@@ -200,7 +195,8 @@ void state_write(Sim_state *sim){
 	if(f == NULL) goto error;
 	int i = 0;
 	for(i = 0;i<sim->count;i++){
-		fprintf(f, "v %f %f %f \n",sim->particles[i]->position->x,sim->particles[i]->position->y,sim->particles[i]->position->z);
+		if(sim->particles[i]->mass == 0)continue;
+		fprintf(f, "v %.16f %.16f %.16f \n",sim->particles[i]->position->x,sim->particles[i]->position->y,sim->particles[i]->position->z);
 	}
 	fclose(f);
 	free(filename);

@@ -19,5 +19,6 @@ inline Vector *vector_sub_true(Vector *a, Vector *b);
 inline Vector *vector_div_true(Vector *a, double d);
 inline Vector *vector_mul_true(Vector *a, double d);
 inline Vector *vector_normalize_true(Vector *a);
+Vector *vector_shorten_in_cube(Vector *a, Vector *write);
 
 #endif
