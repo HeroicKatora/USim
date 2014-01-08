@@ -30,26 +30,27 @@ Particle *particle_join(Particle *a, Particle *b, Particle *write){
 		Vector posA, posB;
 		vector_mul(a->position, a->mass, &posA);
 		vector_mul(b->position, b->mass, &posB);
-		vector_add_true(write->position, &posA);
-		vector_add_true(write->position, &posB);
-		vector_div_true(write->position, write->mass);
+		vector_add_true(&posA, &posB);
+		*write->position = posA;
+		vector_div_true(write->position, a->mass+ b->mass);
 	}
 	{
 		Vector movA,movB;
 		vector_mul(a->speed,a->mass,&movA);
 		vector_mul(b->speed,b->mass,&movB);
-		vector_add_true(write->speed, &movA);
-		vector_add_true(write->speed, &movB);
-		vector_div_true(write->speed, write->mass);
+		vector_add_true(&movA, &movB);
+		*write->speed = movA;
+		vector_div_true(write->speed, a->mass+ b->mass);
 	}
 	{
 		Vector movA,movB;
 		vector_mul(a->speed_old,a->mass,&movA);
 		vector_mul(b->speed_old,b->mass,&movB);
-		vector_add_true(write->speed_old, &movA);
-		vector_add_true(write->speed_old, &movB);
-		vector_div_true(write->speed_old, write->mass);
+		vector_add_true(&movA, &movB);
+		*write->speed_old = movA;
+		vector_div_true(write->speed_old, a->mass+ b->mass);
 	}
+	write->mass = a->mass+b->mass;
 	return write;
 }
 

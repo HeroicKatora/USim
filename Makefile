@@ -1,5 +1,5 @@
 CC     = gcc
-CFLAGS = -Wall -Wextra -g 
+CFLAGS = -Wall -Wextra -g -O3
 
 OBJECTS = main.o particle.o vector.o vector_math.o sim_state.o
 

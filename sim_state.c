@@ -8,7 +8,7 @@
  */
 Sim_state *state_create_empty(int count, double mass_multiplier, double box_size)
 {
-	printf("Creating State with %i, %f, %f",count, mass_multiplier, box_size);
+	printf("Creating State with %i, %f, %f \n",count, mass_multiplier, box_size);
 	Sim_state *s = (Sim_state *)malloc(sizeof(Sim_state));
 	check_mem(s);
 
@@ -69,10 +69,13 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 	Sim_state *newState = state_create_empty(state->count, state->mass_multiplier, state->box_size*exp(HUBBLE_PER_YEAR*timestep));
 	newState->step_count = state->step_count+1;
 	int i;
-	printf("Copy filling \n");
+	printf("Copy filling %i\n", newState->count);
 	for(i = 0;i<newState->count;i++){
+		printf("%i \n",state->particles[i]->position);
+		printf("%i",i);
 		Vector *pos = state->particles[i]->position;
 		newState->particles[i] = particle_create(pos->x,pos->y,pos->z,state->particles[i]->mass);
+		printf("\n");
 	}
 	//Calculate new movement of particles
 	//TODO better grav multiplier by integrating box size over time step
@@ -132,7 +135,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 				*pj = *(newState->particles[newState->count-1]);
 				particle_free(&(newState->particles[newState->count-1]));
 				printf("Joining performed\n");
-				newState->count--;
+				newState->count = newState->count-1;
 				//TODO CRITICAL REVIEW!!!!!!!!!!! Something is seriously wrong when we join Particles. It causes a BEX a few (unknown how many) states later.
 				//newState->particles = realloc(newState->particles, newState->count*sizeof(Particle*));
 				j--;
@@ -200,7 +203,6 @@ void state_write(Sim_state *sim){
 		fprintf(f, "v %f %f %f \n",sim->particles[i]->position->x,sim->particles[i]->position->y,sim->particles[i]->position->z);
 	}
 	fclose(f);
-	free(f);
 	free(filename);
 	return;
 error:
