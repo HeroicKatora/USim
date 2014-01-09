@@ -93,6 +93,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 		*(newState->particles[i]->speed_old) = *(state->particles[i]->speed);
 	}
 	//Calculate new movement of particles
+	//TODO multi-thread or multi compute, so move whole block to new function?
 	//TODO better grav multiplier by integrating box size over time step
 	double grav_multiplier = GRAVITATION_CONSTANT/(state->box_size*state->box_size);
 	grav_multiplier *= state->mass_multiplier*timestep;
@@ -103,7 +104,6 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 		for(j = i+1;j<state->count;j++)
 		{
 			if(state->particles[j]->mass == 0) continue;
-			//TODO multi-thread or multi compute, so move whole block to new function?
 			/* Deprecated block
 			int x;
 			for(x = 0;x<64;x++){
@@ -126,7 +126,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 		if(newState->particles[i]->mass == 0) continue;
 		Vector movement = *newState->particles[i]->speed;
 		vector_add_true(&movement, newState->particles[i]->speed_old);
-		vector_mul_true(&movement, timestep/2);
+		vector_mul_true(&movement, timestep/(2*newState->box_size));
 		vector_add_true(newState->particles[i]->position, &movement);
 		vector_to_unitcube(newState->particles[i]->position);
 		*newState->particles[i]->speed_old = *newState->particles[i]->speed;
