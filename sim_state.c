@@ -25,7 +25,8 @@ error:
 	return NULL;
 }
 
-/*Calculate the effect of the particles on each other and store the resulting speed vectors in the given location.
+/*Deprecated method
+ * Calculate the effect of the particles on each other and store the resulting speed vectors in the given location.
 Also treat them as if they were translated by one cube, described by the short.
 Every two bit of translation refer to one axis(x are bits 3 and 4, y are 5&6,..).
 The first bit toggles translation on and off, the seconds one describes which translation is used.
@@ -33,7 +34,6 @@ The first bit toggles translation on and off, the seconds one describes which tr
 inline void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Vector *speed_a, Vector *speed_b, short translation){
 	Vector pos_dif;
 	vector_sub(b->position, a->position, &pos_dif);
-	vector_shorten_in_cube(&pos_dif, &pos_dif);
 	if((translation&0b10)==0b10){
 		int add = ((translation&0b01)==0)?-1:1;
 		pos_dif.z += add;
@@ -56,6 +56,29 @@ inline void state_calculate_effect(double grav_mul, Particle *a, Particle *b, Ve
 	vector_add_true(speed_b, &i_mov_dif);
 }
 
+inline void state_calculate_force(Particle *a, Particle *b, Vector *write){
+	Vector pos_dif;
+	vector_sub(b->position, a->position, &pos_dif);
+	vector_shorten_in_cube(&pos_dif, &pos_dif);
+	write->x = 0;
+	write->y = 0;
+	write->z = 0;
+	Vector store;
+	double l;
+	int i;
+	for(i=0;i<0x200;i++){
+		if((i&0x7) == 0x4) i++;
+		if((i&0x3F) == 0x20) i+=0x8;
+		if((i&0x1FF) == 0x100) i+=0x40;
+		store = pos_dif;
+		store.x += (i&0x3)*(((i&0x4) == 1)?-1:1);
+		store.y += ((i&0x1F)>>3)*(((i&0x20) == 1)?-1:1);
+		store.x += ((i&0xFF)>>6)*(((i&0x100) == 1)?-1:1);
+		l = vector_length(&store);
+		vector_div_true(&store, l*l);
+		vector_add(write, &store, write);
+	}
+}
 //timestep in Ma
 Sim_state *get_next_state(Sim_state *state, double timestep)
 {
@@ -81,13 +104,21 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 		{
 			if(state->particles[j]->mass == 0) continue;
 			//TODO multi-thread or multi compute, so move whole block to new function?
+			/* Deprecated block
 			int x;
 			for(x = 0;x<64;x++){
 				if((x&0b11)==0b01)x++;
 				if((x&0b1100)==0b0100)x+=0b100;
 				if((x&0b110000)==0b010000)x+=0b10000;
 				state_calculate_effect(grav_multiplier, state->particles[i], state->particles[j], newState->particles[i]->speed, newState->particles[j]->speed, x);
-			}
+			}*/
+			Vector force;
+			Vector forceB;
+			state_calculate_force(state->particles[i], state->particles[j], &force);
+			vector_mul(&force, -grav_multiplier*state->particles[i]->mass, &forceB);
+			vector_mul(&force, grav_multiplier*state->particles[j]->mass, &force);
+			vector_add(newState->particles[i]->speed, &force, newState->particles[i]->speed);
+			vector_add(newState->particles[j]->speed, &forceB, newState->particles[j]->speed);
 		}
 	}
 	//move particles
