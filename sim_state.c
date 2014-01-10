@@ -66,10 +66,13 @@ inline void state_calculate_force(Particle *a, Particle *b, Vector *write){
 	Vector store;
 	double l;
 	int i;
-	for(i=0;i<0x200;i++){
+	for(i=0;i<0x1B7;i++){
+		if((i&0x3) == 0x3) i++;
 		if((i&0x7) == 0x4) i++;
-		if((i&0x3F) == 0x20) i+=0x8;
-		if((i&0x1FF) == 0x100) i+=0x40;
+		if((i&0x18) == 0x18) i+=0x8;
+		if((i&0x38) == 0x20) i+=0x8;
+		if((i&0xC0) == 0xC0) i+=0x40;
+		if((i&0x1C0) == 0x100) i+=0x40;
 		store = pos_dif;
 		store.x += (i&0x3)*(((i&0x4) == 1)?-1:1);
 		store.y += ((i&0x1F)>>3)*(((i&0x20) == 1)?-1:1);
@@ -145,6 +148,7 @@ Sim_state *get_next_state(Sim_state *state, double timestep)
 			//Do this to get the shortest positional difference
 			Vector mov_dif = *(pj->speed);
 			vector_sub(&mov_dif, pi->speed,&mov_dif);
+			vector_div(&mov_dif, newState->box_size, &mov_dif);
 			int join = 0;
 			//TODO review
 			double a = mov_dif.x*mov_dif.x+mov_dif.y*mov_dif.y+mov_dif.z*mov_dif.z;
